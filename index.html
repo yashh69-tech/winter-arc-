@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Winter Arc Tracker - Yashh</title>
+<style>
+  :root {
+    --bg: #090d16;
+    --card: #131b2e;
+    --border: #263352;
+    --accent: #38bdf8;
+    --text: #f1f5f9;
+    --sub: #94a3b8;
+    --done: #16a34a;
+    --miss: #dc2626;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    padding: 14px;
+    padding-bottom: 50px;
+  }
+  .header {
+    text-align: center;
+    border-bottom: 2px solid var(--border);
+    padding-bottom: 12px;
+    margin-bottom: 16px;
+  }
+  .title {
+    font-size: 22px;
+    font-weight: 900;
+    letter-spacing: 3px;
+    color: #fff;
+  }
+  .meta-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 10px;
+    font-size: 13px;
+    color: var(--sub);
+  }
+  .meta-bar input, .meta-bar select {
+    background: var(--card);
+    border: 1px solid var(--border);
+    color: #fff;
+    padding: 6px 10px;
+    border-radius: 6px;
+    font-size: 13px;
+    outline: none;
+  }
+  .btn-reset {
+    background: #1e293b;
+    border: 1px solid #ef4444;
+    color: #f87171;
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-size: 11px;
+    font-weight: bold;
+    cursor: pointer;
+  }
+  .section-label {
+    font-size: 12px;
+    font-weight: 800;
+    letter-spacing: 1px;
+    color: var(--accent);
+    margin: 14px 0 6px;
+    text-transform: uppercase;
+  }
+  .table-container {
+    overflow-x: auto;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    -webkit-overflow-scrolling: touch;
+  }
+  table {
+    border-collapse: collapse;
+    width: 100%;
+    min-width: 950px;
+  }
+  th, td {
+    border: 1px solid var(--border);
+    text-align: center;
+    vertical-align: middle;
+    padding: 2px;
+  }
+  th {
+    background: #17233d;
+    color: var(--sub);
+    font-size: 11px;
+    height: 28px;
+    font-weight: 700;
+  }
+  .sticky-col {
+    position: sticky;
+    left: 0;
+    background: #101728;
+    z-index: 3;
+    width: 160px;
+    min-width: 160px;
+    text-align: left;
+    padding: 4px 8px;
+    font-size: 12px;
+    font-weight: 600;
+  }
+  .sticky-col input {
+    background: transparent;
+    border: none;
+    color: #fff;
+    font-weight: 600;
+    font-size: 12px;
+    width: 100%;
+    outline: none;
+  }
+  .day-cell {
+    width: 26px;
+    min-width: 26px;
+    height: 26px;
+    cursor: pointer;
+    font-size: 12px;
+    font-weight: bold;
+    user-select: none;
+    transition: background 0.15s;
+  }
+  .day-cell.done {
+    background: var(--done);
+    color: #fff;
+  }
+  .day-cell.miss {
+    background: var(--miss);
+    color: #fff;
+  }
+  .sleep-cell {
+    width: 26px;
+    min-width: 26px;
+    height: 24px;
+    cursor: pointer;
+    user-select: none;
+  }
+  .sleep-cell.active {
+    background: #0284c7;
+    color: #fff;
+  }
+  .bottom-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    margin-top: 16px;
+  }
+  .box {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 10px;
+  }
+  .box label {
+    display: block;
+    font-size: 11px;
+    font-weight: 800;
+    color: var(--accent);
+    margin-bottom: 6px;
+    text-transform: uppercase;
+  }
+  .box textarea {
+    width: 100%;
+    height: 85px;
+    background: #0b1120;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    color: #fff;
+    padding: 8px;
+    font-size: 12px;
+    outline: none;
+    resize: none;
+    font-family: inherit;
+  }
+  .footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-top: 1px solid var(--border);
+    margin-top: 16px;
+    padding-top: 10px;
+    font-size: 12px;
+    color: var(--sub);
+  }
+  .footer .tag {
+    color: #fff;
+    font-weight: 900;
+    letter-spacing: 2px;
+  }
+  @media (max-width: 768px) {
+    .bottom-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="title">/// WINTER ARC TRACKER ///</div>
+  <div class="meta-bar">
+    <div>NAME: <input type="text" id="uName" value="YASHH" style="width:110px;"></div>
+    <div>MONTH: 
+      <select id="uMonth">
+        <option>OCTOBER</option>
+        <option>NOVEMBER</option>
+        <option>DECEMBER</option>
+        <option>JANUARY</option>
+        <option>FEBRUARY</option>
+        <option>MARCH</option>
+      </select>
+    </div>
+    <button class="btn-reset" onclick="resetData()">RESET DATA</button>
+  </div>
+</div>
+
+<div class="section-label">Habits Matrix (1 Tap: ✔ Done | 2 Taps: ✖ Missed | 3 Taps: Clear)</div>
+<div class="table-container">
+  <table id="habitTable">
+    <thead>
+      <tr>
+        <th class="sticky-col">HABITS / DAYS</th>
+      </tr>
+    </thead>
+    <tbody id="habitBody"></tbody>
+  </table>
+</div>
+
+<div class="section-label">Sleep Schedule (Tap row to mark sleep)</div>
+<div class="table-container">
+  <table id="sleepTable">
+    <thead>
+      <tr>
+        <th class="sticky-col">HOURS / DAYS</th>
+      </tr>
+    </thead>
+    <tbody id="sleepBody"></tbody>
+  </table>
+</div>
+
+<div class="bottom-grid">
+  <div class="box">
+    <label>My Monthly Goal</label>
+    <textarea id="goal1" placeholder="Target steps, weight, study targets..."></textarea>
+  </div>
+  <div class="box">
+    <label>What I Have Achieved This Month</label>
+    <textarea id="goal2" placeholder="Milestones reached, streaks completed..."></textarea>
+  </div>
+  <div class="box">
+    <label>What Should I Improve</label>
+    <textarea id="goal3" placeholder="Distractions avoided, weaknesses..."></textarea>
+  </div>
+</div>
+
+<div class="footer">
+  <span>“DISCIPLINE IN THE DARK. RESULTS IN THE LIGHT.”</span>
+  <span class="tag">⚡ YASHH ⚡</span>
+</div>
+
+<script>
+  const hTableHead = document.querySelector('#habitTable thead tr');
+  const sTableHead = document.querySelector('#sleepTable thead tr');
+  const hBody = document.getElementById('habitBody');
+  const sBody = document.getElementById('sleepBody');
+
+  // Days 1-31 header
+  for(let i=1; i<=31; i++){
+    let th1 = document.createElement('th'); th1.textContent = i; hTableHead.appendChild(th1);
+    let th2 = document.createElement('th'); th2.textContent = i; sTableHead.appendChild(th2);
+  }
+
+  // Habits rows
+  const defaultHabits = [
+    "1. Gym / Workout",
+    "2. Daily Steps",
+    "3. Clean Diet",
+    "4. Skill / BCA Study",
+    "5. Sleep by 11 PM",
+    "6. Reading / Focus",
+    "7. Habit 7",
+    "8. Habit 8",
+    "9. Habit 9",
+    "10. Habit 10"
+  ];
+
+  defaultHabits.forEach((hName, r) => {
+    let tr = document.createElement('tr');
+    let tdTitle = document.createElement('td');
+    tdTitle.className = 'sticky-col';
+    let inp = document.createElement('input');
+    inp.value = localStorage.getItem('ht_' + r) || hName;
+    inp.oninput = () => localStorage.setItem('ht_' + r, inp.value);
+    tdTitle.appendChild(inp);
+    tr.appendChild(tdTitle);
+
+    for(let d=1; d<=31; d++){
+      let td = document.createElement('td');
+      td.className = 'day-cell';
+      let key = 'h_' + r + '_' + d;
+      let val = localStorage.getItem(key);
+      if(val === 'done') { td.classList.add('done'); td.textContent = '✔'; }
+      else if(val === 'miss') { td.classList.add('miss'); td.textContent = '✖'; }
+
+      td.onclick = () => {
+        if(!td.classList.contains('done') && !td.classList.contains('miss')){
+          td.classList.add('done'); td.textContent = '✔';
+          localStorage.setItem(key, 'done');
+        } else if(td.classList.contains('done')){
+          td.classList.remove('done'); td.classList.add('miss'); td.textContent = '✖';
+          localStorage.setItem(key, 'miss');
+        } else {
+          td.classList.remove('miss'); td.textContent = '';
+          localStorage.removeItem(key);
+        }
+      };
+      tr.appendChild(td);
+    }
+    hBody.appendChild(tr);
+  });
+
+  // Sleep rows
+  const sleepHours = ['10 HRS', '9 HRS', '8 HRS', '7 HRS', '6 HRS', '5 HRS', '4 HRS'];
+  sleepHours.forEach((hr, hIdx) => {
+    let tr = document.createElement('tr');
+    let tdTitle = document.createElement('td');
+    tdTitle.className = 'sticky-col';
+    tdTitle.style.color = 'var(--sub)';
+    tdTitle.textContent = hr;
+    tr.appendChild(tdTitle);
+
+    for(let d=1; d<=31; d++){
+      let td = document.createElement('td');
+      td.className = 'sleep-cell';
+      td.id = 's_' + hIdx + '_' + d;
+      let saved = localStorage.getItem('sleep_d_' + d);
+      if(saved == hIdx) td.classList.add('active');
+
+      td.onclick = () => {
+        for(let i=0; i<7; i++){
+          let c = document.getElementById('s_' + i + '_' + d);
+          if(c) c.classList.remove('active');
+        }
+        let cur = localStorage.getItem('sleep_d_' + d);
+        if(cur == hIdx){
+          localStorage.removeItem('sleep_d_' + d);
+        } else {
+          td.classList.add('active');
+          localStorage.setItem('sleep_d_' + d, hIdx);
+        }
+      };
+      tr.appendChild(td);
+    }
+    sBody.appendChild(tr);
+  });
+
+  // Inputs restore
+  ['uName', 'uMonth', 'goal1', 'goal2', 'goal3'].forEach(id => {
+    let el = document.getElementById(id);
+    let val = localStorage.getItem(id);
+    if(val) el.value = val;
+    el.oninput = () => localStorage.setItem(id, el.value);
+  });
+
+  function resetData() {
+    if(confirm('Pura tracker reset karna chahte hain?')) {
+      localStorage.clear();
+      location.reload();
+    }
+  }
+</script>
+</body>
+</html>
