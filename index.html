@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Winter Arc Tracker - Yashh</title>
+<title>Winter Arc Tracker - YASHH</title>
 
 <!-- Firebase SDKs -->
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
@@ -20,14 +20,31 @@
     --sub: #94a3b8;
     --done: #16a34a;
     --miss: #dc2626;
+    --sticky-bg: #101728;
+    --input-bg: #0b1120;
   }
+
+  body.light-mode {
+    --bg: #f8fafc;
+    --card: #ffffff;
+    --border: #cbd5e1;
+    --accent: #0284c7;
+    --text: #0f172a;
+    --sub: #64748b;
+    --done: #22c55e;
+    --miss: #ef4444;
+    --sticky-bg: #f1f5f9;
+    --input-bg: #f8fafc;
+  }
+
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body {
     background: var(--bg);
     color: var(--text);
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
     padding: 14px;
-    padding-bottom: 50px;
+    padding-bottom: 60px;
+    transition: background 0.3s, color 0.3s;
   }
 
   /* Auth Modal */
@@ -51,16 +68,16 @@
     text-align: center;
     box-shadow: 0 10px 30px rgba(0,0,0,0.6);
   }
-  .auth-card h2 { font-size: 20px; letter-spacing: 2px; margin-bottom: 8px; color: #fff; font-weight: 900; }
+  .auth-card h2 { font-size: 20px; letter-spacing: 2px; margin-bottom: 8px; color: var(--text); font-weight: 900; }
   .auth-card p { font-size: 12px; color: var(--sub); margin-bottom: 16px; }
   .auth-card input {
     width: 100%;
     padding: 10px 12px;
     margin-bottom: 12px;
-    background: #0b1120;
+    background: var(--input-bg);
     border: 1px solid var(--border);
     border-radius: 6px;
-    color: #fff;
+    color: var(--text);
     font-size: 13px;
     outline: none;
   }
@@ -68,7 +85,7 @@
     width: 100%;
     padding: 11px;
     background: var(--accent);
-    color: #090d16;
+    color: #fff;
     font-weight: 800;
     border: none;
     border-radius: 6px;
@@ -84,14 +101,61 @@
     text-decoration: underline;
   }
 
-  /* Dashboard Header */
+  /* Header & Controls */
   .header {
     text-align: center;
     border-bottom: 2px solid var(--border);
     padding-bottom: 12px;
     margin-bottom: 16px;
   }
-  .title { font-size: 22px; font-weight: 900; letter-spacing: 3px; color: #fff; }
+  .top-actions {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .badge-container {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+  }
+  .streak-badge {
+    background: linear-gradient(135deg, #ea580c, #f97316);
+    color: #fff;
+    padding: 5px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 800;
+  }
+  .author-badge {
+    background: rgba(56, 189, 248, 0.15);
+    border: 1px solid var(--accent);
+    color: var(--accent);
+    padding: 5px 12px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 900;
+    letter-spacing: 1.5px;
+  }
+  .tool-btns {
+    display: flex;
+    gap: 8px;
+  }
+  .btn-tool {
+    background: var(--card);
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    outline: none;
+  }
+
+  .title { font-size: 22px; font-weight: 900; letter-spacing: 3px; color: var(--text); }
   .meta-bar {
     display: flex;
     justify-content: space-between;
@@ -105,16 +169,16 @@
   .meta-bar input, .meta-bar select {
     background: var(--card);
     border: 1px solid var(--border);
-    color: #fff;
+    color: var(--text);
     padding: 6px 10px;
     border-radius: 6px;
     font-size: 13px;
     outline: none;
   }
   .btn-logout {
-    background: #1e293b;
+    background: transparent;
     border: 1px solid #ef4444;
-    color: #f87171;
+    color: #ef4444;
     padding: 5px 12px;
     border-radius: 6px;
     font-size: 11px;
@@ -123,6 +187,7 @@
   }
   .sync-status { font-size: 12px; color: var(--accent); font-weight: bold; }
 
+  /* Tables */
   .section-label {
     font-size: 12px;
     font-weight: 800;
@@ -150,7 +215,7 @@
     padding: 2px;
   }
   th {
-    background: #17233d;
+    background: var(--sticky-bg);
     color: var(--sub);
     font-size: 11px;
     height: 28px;
@@ -159,7 +224,7 @@
   .sticky-col {
     position: sticky;
     left: 0;
-    background: #101728;
+    background: var(--sticky-bg);
     z-index: 3;
     width: 160px;
     min-width: 160px;
@@ -171,7 +236,7 @@
   .sticky-col input {
     background: transparent;
     border: none;
-    color: #fff;
+    color: var(--text);
     font-weight: 600;
     font-size: 12px;
     width: 100%;
@@ -197,6 +262,8 @@
     user-select: none;
   }
   .sleep-cell.active { background: #0284c7; color: #fff; }
+
+  /* Bottom Cards */
   .bottom-grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
@@ -220,10 +287,10 @@
   .box textarea {
     width: 100%;
     height: 85px;
-    background: #0b1120;
+    background: var(--input-bg);
     border: 1px solid var(--border);
     border-radius: 6px;
-    color: #fff;
+    color: var(--text);
     padding: 8px;
     font-size: 12px;
     outline: none;
@@ -235,13 +302,25 @@
     justify-content: space-between;
     align-items: center;
     border-top: 1px solid var(--border);
-    margin-top: 16px;
-    padding-top: 10px;
+    margin-top: 18px;
+    padding-top: 14px;
     font-size: 12px;
     color: var(--sub);
+    flex-wrap: wrap;
+    gap: 10px;
   }
-  .footer .tag { color: #fff; font-weight: 900; letter-spacing: 2px; }
-  @media (max-width: 768px) { .bottom-grid { grid-template-columns: 1fr; } }
+  .watermark {
+    background: linear-gradient(90deg, #38bdf8, #818cf8);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    font-size: 16px;
+    font-weight: 900;
+    letter-spacing: 3px;
+  }
+  @media (max-width: 768px) { 
+    .bottom-grid { grid-template-columns: 1fr; }
+    .footer { flex-direction: column; text-align: center; }
+  }
 </style>
 </head>
 <body>
@@ -260,11 +339,20 @@
 </div>
 
 <div class="header">
+  <div class="top-actions">
+    <div class="badge-container">
+      <div class="streak-badge">🔥 STREAK: <span id="streakCount">0</span> DAYS</div>
+      <div class="author-badge">CREATED BY YASHH</div>
+    </div>
+    <div class="tool-btns">
+      <button class="btn-tool" onclick="toggleTheme()" id="themeBtn">🌓 THEME</button>
+      <button class="btn-tool" onclick="setupReminder()">🔔 REMINDER</button>
+    </div>
+  </div>
   <div class="title">/// WINTER ARC TRACKER ///</div>
   <div class="meta-bar">
     <div>NAME: <input type="text" id="uName" value="" placeholder="Your Name" style="width:110px;" oninput="saveCloudData()"></div>
     
-    <!-- Months (Jan - Dec) -->
     <div>MONTH: 
       <select id="uMonth" onchange="saveCloudData()">
         <option>JANUARY</option>
@@ -282,7 +370,6 @@
       </select>
     </div>
 
-    <!-- Years (2027 to 2047) -->
     <div>YEAR: 
       <select id="uYear" onchange="saveCloudData()"></select>
     </div>
@@ -333,7 +420,7 @@
 
 <div class="footer">
   <span>“DISCIPLINE IN THE DARK. RESULTS IN THE LIGHT.”</span>
-  <span class="tag">⚡ WINTER ARC ⚡</span>
+  <span class="watermark">⚡ YASHH ⚡</span>
 </div>
 
 <script>
@@ -358,20 +445,46 @@
     habitsMatrix: {},
     sleepMatrix: {},
     uName: "",
-    uMonth: "JANUARY",
-    uYear: "2027",
+    uMonth: "SEPTEMBER",
+    uYear: "2026",
     goal1: "",
     goal2: "",
-    goal3: ""
+    goal3: "",
+    theme: "dark"
   };
 
-  // Populate Years: 2027 to 2047 (20 years)
+  // Populate Years: 2026 to 2046
   const yearSelect = document.getElementById('uYear');
-  for (let y = 2027; y <= 2047; y++) {
+  for (let y = 2026; y <= 2046; y++) {
     let opt = document.createElement('option');
     opt.value = y;
     opt.textContent = y;
     yearSelect.appendChild(opt);
+  }
+
+  // Theme Toggle
+  function toggleTheme() {
+    const isLight = document.body.classList.toggle('light-mode');
+    trackerData.theme = isLight ? 'light' : 'dark';
+    saveCloudData();
+  }
+
+  // Daily Reminder Permission
+  function setupReminder() {
+    if (!("Notification" in window)) {
+      alert("Aapka browser notifications support nahi karta.");
+      return;
+    }
+    Notification.requestPermission().then(permission => {
+      if (permission === "granted") {
+        new Notification("Winter Arc Tracker", {
+          body: "Daily Reminder activated! Aaj ka streak continue rakhein ⚡",
+          icon: "https://fav.farm/🔥"
+        });
+      } else {
+        alert("Notification permission allow karein taaki daily reminder mil sake.");
+      }
+    });
   }
 
   function toggleAuthMode() {
@@ -425,7 +538,7 @@
     let th2 = document.createElement('th'); th2.textContent = i; sTableHead.appendChild(th2);
   }
 
-  // 10 Blank Habit rows
+  // 10 Blank Habits
   for(let r=0; r<10; r++){
     let tr = document.createElement('tr');
     let tdTitle = document.createElement('td');
@@ -457,6 +570,7 @@
           td.classList.remove('miss'); td.textContent = '';
           delete trackerData.habitsMatrix[key];
         }
+        calculateStreak();
         saveCloudData();
       };
       tr.appendChild(td);
@@ -464,6 +578,7 @@
     hBody.appendChild(tr);
   }
 
+  // Sleep Matrix
   const sleepHours = ['10 HRS', '9 HRS', '8 HRS', '7 HRS', '6 HRS', '5 HRS', '4 HRS'];
   sleepHours.forEach((hr, hIdx) => {
     let tr = document.createElement('tr');
@@ -495,6 +610,28 @@
     sBody.appendChild(tr);
   });
 
+  // Calculate Streak
+  function calculateStreak() {
+    let currentStreak = 0;
+    let maxStreak = 0;
+    for (let d = 1; d <= 31; d++) {
+      let anyDone = false;
+      for (let r = 0; r < 10; r++) {
+        if (trackerData.habitsMatrix[`${r}_${d}`] === 'done') {
+          anyDone = true;
+          break;
+        }
+      }
+      if (anyDone) {
+        currentStreak++;
+        if (currentStreak > maxStreak) maxStreak = currentStreak;
+      } else {
+        currentStreak = 0;
+      }
+    }
+    document.getElementById('streakCount').textContent = maxStreak;
+  }
+
   let saveTimer = null;
   function saveCloudData() {
     if (!currentUser) return;
@@ -525,11 +662,17 @@
         if (doc.exists) {
           trackerData = Object.assign(trackerData, doc.data());
           document.getElementById('uName').value = trackerData.uName || "";
-          document.getElementById('uMonth').value = trackerData.uMonth || "JANUARY";
-          document.getElementById('uYear').value = trackerData.uYear || "2027";
+          document.getElementById('uMonth').value = trackerData.uMonth || "SEPTEMBER";
+          document.getElementById('uYear').value = trackerData.uYear || "2026";
           document.getElementById('goal1').value = trackerData.goal1 || "";
           document.getElementById('goal2').value = trackerData.goal2 || "";
           document.getElementById('goal3').value = trackerData.goal3 || "";
+
+          if (trackerData.theme === 'light') {
+            document.body.classList.add('light-mode');
+          } else {
+            document.body.classList.remove('light-mode');
+          }
 
           if (trackerData.habitsText) {
             for (let r in trackerData.habitsText) {
@@ -554,6 +697,7 @@
               if (cell) cell.classList.add('active');
             }
           }
+          calculateStreak();
         }
         document.getElementById('syncStatus').textContent = "● Cloud Connected";
       });
