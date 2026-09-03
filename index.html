@@ -262,17 +262,31 @@
 <div class="header">
   <div class="title">/// WINTER ARC TRACKER ///</div>
   <div class="meta-bar">
-    <div>NAME: <input type="text" id="uName" value="" placeholder="Enter Name" style="width:120px;" oninput="saveCloudData()"></div>
+    <div>NAME: <input type="text" id="uName" value="" placeholder="Your Name" style="width:110px;" oninput="saveCloudData()"></div>
+    
+    <!-- Months (Jan - Dec) -->
     <div>MONTH: 
       <select id="uMonth" onchange="saveCloudData()">
-        <option>OCTOBER</option>
-        <option>NOVEMBER</option>
-        <option>DECEMBER</option>
         <option>JANUARY</option>
         <option>FEBRUARY</option>
         <option>MARCH</option>
+        <option>APRIL</option>
+        <option>MAY</option>
+        <option>JUNE</option>
+        <option>JULY</option>
+        <option>AUGUST</option>
+        <option>SEPTEMBER</option>
+        <option>OCTOBER</option>
+        <option>NOVEMBER</option>
+        <option>DECEMBER</option>
       </select>
     </div>
+
+    <!-- Years (2027 to 2047) -->
+    <div>YEAR: 
+      <select id="uYear" onchange="saveCloudData()"></select>
+    </div>
+
     <div class="sync-status" id="syncStatus">● Connecting...</div>
     <button class="btn-logout" onclick="logoutUser()">LOGOUT</button>
   </div>
@@ -344,11 +358,21 @@
     habitsMatrix: {},
     sleepMatrix: {},
     uName: "",
-    uMonth: "OCTOBER",
+    uMonth: "JANUARY",
+    uYear: "2027",
     goal1: "",
     goal2: "",
     goal3: ""
   };
+
+  // Populate Years: 2027 to 2047 (20 years)
+  const yearSelect = document.getElementById('uYear');
+  for (let y = 2027; y <= 2047; y++) {
+    let opt = document.createElement('option');
+    opt.value = y;
+    opt.textContent = y;
+    yearSelect.appendChild(opt);
+  }
 
   function toggleAuthMode() {
     isSignUpMode = !isSignUpMode;
@@ -479,6 +503,7 @@
     saveTimer = setTimeout(() => {
       trackerData.uName = document.getElementById('uName').value;
       trackerData.uMonth = document.getElementById('uMonth').value;
+      trackerData.uYear = document.getElementById('uYear').value;
       trackerData.goal1 = document.getElementById('goal1').value;
       trackerData.goal2 = document.getElementById('goal2').value;
       trackerData.goal3 = document.getElementById('goal3').value;
@@ -500,7 +525,8 @@
         if (doc.exists) {
           trackerData = Object.assign(trackerData, doc.data());
           document.getElementById('uName').value = trackerData.uName || "";
-          document.getElementById('uMonth').value = trackerData.uMonth || "OCTOBER";
+          document.getElementById('uMonth').value = trackerData.uMonth || "JANUARY";
+          document.getElementById('uYear').value = trackerData.uYear || "2027";
           document.getElementById('goal1').value = trackerData.goal1 || "";
           document.getElementById('goal2').value = trackerData.goal2 || "";
           document.getElementById('goal3').value = trackerData.goal3 || "";
