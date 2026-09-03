@@ -4,6 +4,12 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Winter Arc Tracker - Yashh</title>
+
+<!-- Firebase SDKs -->
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+
 <style>
   :root {
     --bg: #090d16;
@@ -23,18 +29,69 @@
     padding: 14px;
     padding-bottom: 50px;
   }
+
+  /* Auth Modal */
+  #authModal {
+    position: fixed;
+    inset: 0;
+    background: rgba(9, 13, 22, 0.96);
+    z-index: 999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+  }
+  .auth-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 24px;
+    width: 100%;
+    max-width: 380px;
+    text-align: center;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.6);
+  }
+  .auth-card h2 { font-size: 20px; letter-spacing: 2px; margin-bottom: 8px; color: #fff; font-weight: 900; }
+  .auth-card p { font-size: 12px; color: var(--sub); margin-bottom: 16px; }
+  .auth-card input {
+    width: 100%;
+    padding: 10px 12px;
+    margin-bottom: 12px;
+    background: #0b1120;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    color: #fff;
+    font-size: 13px;
+    outline: none;
+  }
+  .btn-auth {
+    width: 100%;
+    padding: 11px;
+    background: var(--accent);
+    color: #090d16;
+    font-weight: 800;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 13px;
+    letter-spacing: 1px;
+  }
+  .toggle-auth {
+    font-size: 11px;
+    color: var(--sub);
+    margin-top: 14px;
+    cursor: pointer;
+    text-decoration: underline;
+  }
+
+  /* Dashboard Header */
   .header {
     text-align: center;
     border-bottom: 2px solid var(--border);
     padding-bottom: 12px;
     margin-bottom: 16px;
   }
-  .title {
-    font-size: 22px;
-    font-weight: 900;
-    letter-spacing: 3px;
-    color: #fff;
-  }
+  .title { font-size: 22px; font-weight: 900; letter-spacing: 3px; color: #fff; }
   .meta-bar {
     display: flex;
     justify-content: space-between;
@@ -42,6 +99,8 @@
     margin-top: 10px;
     font-size: 13px;
     color: var(--sub);
+    flex-wrap: wrap;
+    gap: 8px;
   }
   .meta-bar input, .meta-bar select {
     background: var(--card);
@@ -52,16 +111,18 @@
     font-size: 13px;
     outline: none;
   }
-  .btn-reset {
+  .btn-logout {
     background: #1e293b;
     border: 1px solid #ef4444;
     color: #f87171;
-    padding: 6px 12px;
+    padding: 5px 12px;
     border-radius: 6px;
     font-size: 11px;
     font-weight: bold;
     cursor: pointer;
   }
+  .sync-status { font-size: 12px; color: var(--accent); font-weight: bold; }
+
   .section-label {
     font-size: 12px;
     font-weight: 800;
@@ -126,14 +187,8 @@
     user-select: none;
     transition: background 0.15s;
   }
-  .day-cell.done {
-    background: var(--done);
-    color: #fff;
-  }
-  .day-cell.miss {
-    background: var(--miss);
-    color: #fff;
-  }
+  .day-cell.done { background: var(--done); color: #fff; }
+  .day-cell.miss { background: var(--miss); color: #fff; }
   .sleep-cell {
     width: 26px;
     min-width: 26px;
@@ -141,10 +196,7 @@
     cursor: pointer;
     user-select: none;
   }
-  .sleep-cell.active {
-    background: #0284c7;
-    color: #fff;
-  }
+  .sleep-cell.active { background: #0284c7; color: #fff; }
   .bottom-grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
@@ -188,24 +240,31 @@
     font-size: 12px;
     color: var(--sub);
   }
-  .footer .tag {
-    color: #fff;
-    font-weight: 900;
-    letter-spacing: 2px;
-  }
-  @media (max-width: 768px) {
-    .bottom-grid { grid-template-columns: 1fr; }
-  }
+  .footer .tag { color: #fff; font-weight: 900; letter-spacing: 2px; }
+  @media (max-width: 768px) { .bottom-grid { grid-template-columns: 1fr; } }
 </style>
 </head>
 <body>
 
+<!-- Login / Register Modal -->
+<div id="authModal">
+  <div class="auth-card">
+    <h2 id="authHeading">WINTER ARC LOGIN</h2>
+    <p id="authSub">Apne account me login karein ya naya banayein</p>
+    <input type="email" id="authEmail" placeholder="Email address">
+    <input type="password" id="authPassword" placeholder="Password (at least 6 chars)">
+    <button class="btn-auth" id="authBtn" onclick="handleAuth()">LOGIN</button>
+    <div class="toggle-auth" id="authToggle" onclick="toggleAuthMode()">Naya account banana hai? Sign Up karein</div>
+    <div id="authError" style="color:#ef4444; font-size:11px; margin-top:10px;"></div>
+  </div>
+</div>
+
 <div class="header">
   <div class="title">/// WINTER ARC TRACKER ///</div>
   <div class="meta-bar">
-    <div>NAME: <input type="text" id="uName" value="YASHH" style="width:110px;"></div>
+    <div>NAME: <input type="text" id="uName" value="" placeholder="Enter Name" style="width:120px;" oninput="saveCloudData()"></div>
     <div>MONTH: 
-      <select id="uMonth">
+      <select id="uMonth" onchange="saveCloudData()">
         <option>OCTOBER</option>
         <option>NOVEMBER</option>
         <option>DECEMBER</option>
@@ -214,7 +273,8 @@
         <option>MARCH</option>
       </select>
     </div>
-    <button class="btn-reset" onclick="resetData()">RESET DATA</button>
+    <div class="sync-status" id="syncStatus">● Connecting...</div>
+    <button class="btn-logout" onclick="logoutUser()">LOGOUT</button>
   </div>
 </div>
 
@@ -245,85 +305,141 @@
 <div class="bottom-grid">
   <div class="box">
     <label>My Monthly Goal</label>
-    <textarea id="goal1" placeholder="Target steps, weight, study targets..."></textarea>
+    <textarea id="goal1" oninput="saveCloudData()" placeholder="Write your targets..."></textarea>
   </div>
   <div class="box">
     <label>What I Have Achieved This Month</label>
-    <textarea id="goal2" placeholder="Milestones reached, streaks completed..."></textarea>
+    <textarea id="goal2" oninput="saveCloudData()" placeholder="Milestones reached..."></textarea>
   </div>
   <div class="box">
     <label>What Should I Improve</label>
-    <textarea id="goal3" placeholder="Distractions avoided, weaknesses..."></textarea>
+    <textarea id="goal3" oninput="saveCloudData()" placeholder="Weak areas to fix..."></textarea>
   </div>
 </div>
 
 <div class="footer">
   <span>“DISCIPLINE IN THE DARK. RESULTS IN THE LIGHT.”</span>
-  <span class="tag">⚡ YASHH ⚡</span>
+  <span class="tag">⚡ WINTER ARC ⚡</span>
 </div>
 
 <script>
+  const firebaseConfig = {
+    apiKey: "AIzaSyDTi4NRid5Yc72ATBfxg995GAWg1fUOBNs",
+    authDomain: "winter-arc-tracker-6544e.firebaseapp.com",
+    projectId: "winter-arc-tracker-6544e",
+    storageBucket: "winter-arc-tracker-6544e.firebasestorage.app",
+    messagingSenderId: "1076175486940",
+    appId: "1:1076175486940:web:1e3cb601ab0e71806a1919",
+    measurementId: "G-P63QXDBSQD"
+  };
+
+  firebase.initializeApp(firebaseConfig);
+  const auth = firebase.auth();
+  const db = firebase.firestore();
+
+  let currentUser = null;
+  let isSignUpMode = false;
+  let trackerData = {
+    habitsText: {},
+    habitsMatrix: {},
+    sleepMatrix: {},
+    uName: "",
+    uMonth: "OCTOBER",
+    goal1: "",
+    goal2: "",
+    goal3: ""
+  };
+
+  function toggleAuthMode() {
+    isSignUpMode = !isSignUpMode;
+    document.getElementById('authHeading').textContent = isSignUpMode ? "CREATE ACCOUNT" : "WINTER ARC LOGIN";
+    document.getElementById('authBtn').textContent = isSignUpMode ? "SIGN UP & START" : "LOGIN";
+    document.getElementById('authToggle').textContent = isSignUpMode ? "Pehle se account hai? Login karein" : "Naya account banana hai? Sign Up karein";
+    document.getElementById('authError').textContent = "";
+  }
+
+  function handleAuth() {
+    const email = document.getElementById('authEmail').value.trim();
+    const pass = document.getElementById('authPassword').value;
+    const errDiv = document.getElementById('authError');
+    errDiv.textContent = "";
+
+    if(!email || !pass) { errDiv.textContent = "Email aur password dono bharein!"; return; }
+
+    if (isSignUpMode) {
+      auth.createUserWithEmailAndPassword(email, pass)
+        .catch(err => errDiv.textContent = err.message);
+    } else {
+      auth.signInWithEmailAndPassword(email, pass)
+        .catch(err => errDiv.textContent = err.message);
+    }
+  }
+
+  function logoutUser() {
+    auth.signOut();
+  }
+
+  auth.onAuthStateChanged(user => {
+    if (user) {
+      currentUser = user;
+      document.getElementById('authModal').style.display = 'none';
+      loadCloudData();
+    } else {
+      currentUser = null;
+      document.getElementById('authModal').style.display = 'flex';
+      document.getElementById('syncStatus').textContent = "● Not logged in";
+    }
+  });
+
   const hTableHead = document.querySelector('#habitTable thead tr');
   const sTableHead = document.querySelector('#sleepTable thead tr');
   const hBody = document.getElementById('habitBody');
   const sBody = document.getElementById('sleepBody');
 
-  // Days 1-31 header
   for(let i=1; i<=31; i++){
     let th1 = document.createElement('th'); th1.textContent = i; hTableHead.appendChild(th1);
     let th2 = document.createElement('th'); th2.textContent = i; sTableHead.appendChild(th2);
   }
 
-  // Habits rows
-  const defaultHabits = [
-    "1. Gym / Workout",
-    "2. Daily Steps",
-    "3. Clean Diet",
-    "4. Skill / BCA Study",
-    "5. Sleep by 11 PM",
-    "6. Reading / Focus",
-    "7. Habit 7",
-    "8. Habit 8",
-    "9. Habit 9",
-    "10. Habit 10"
-  ];
-
-  defaultHabits.forEach((hName, r) => {
+  // 10 Blank Habit rows
+  for(let r=0; r<10; r++){
     let tr = document.createElement('tr');
     let tdTitle = document.createElement('td');
     tdTitle.className = 'sticky-col';
     let inp = document.createElement('input');
-    inp.value = localStorage.getItem('ht_' + r) || hName;
-    inp.oninput = () => localStorage.setItem('ht_' + r, inp.value);
+    inp.id = 'ht_' + r;
+    inp.placeholder = `Habit ${r + 1}...`;
+    inp.value = "";
+    inp.oninput = () => {
+      trackerData.habitsText[r] = inp.value;
+      saveCloudData();
+    };
     tdTitle.appendChild(inp);
     tr.appendChild(tdTitle);
 
     for(let d=1; d<=31; d++){
       let td = document.createElement('td');
       td.className = 'day-cell';
-      let key = 'h_' + r + '_' + d;
-      let val = localStorage.getItem(key);
-      if(val === 'done') { td.classList.add('done'); td.textContent = '✔'; }
-      else if(val === 'miss') { td.classList.add('miss'); td.textContent = '✖'; }
-
+      td.id = `h_${r}_${d}`;
       td.onclick = () => {
-        if(!td.classList.contains('done') && !td.classList.contains('miss')){
+        let key = `${r}_${d}`;
+        if (!td.classList.contains('done') && !td.classList.contains('miss')) {
           td.classList.add('done'); td.textContent = '✔';
-          localStorage.setItem(key, 'done');
-        } else if(td.classList.contains('done')){
+          trackerData.habitsMatrix[key] = 'done';
+        } else if (td.classList.contains('done')) {
           td.classList.remove('done'); td.classList.add('miss'); td.textContent = '✖';
-          localStorage.setItem(key, 'miss');
+          trackerData.habitsMatrix[key] = 'miss';
         } else {
           td.classList.remove('miss'); td.textContent = '';
-          localStorage.removeItem(key);
+          delete trackerData.habitsMatrix[key];
         }
+        saveCloudData();
       };
       tr.appendChild(td);
     }
     hBody.appendChild(tr);
-  });
+  }
 
-  // Sleep rows
   const sleepHours = ['10 HRS', '9 HRS', '8 HRS', '7 HRS', '6 HRS', '5 HRS', '4 HRS'];
   sleepHours.forEach((hr, hIdx) => {
     let tr = document.createElement('tr');
@@ -336,41 +452,85 @@
     for(let d=1; d<=31; d++){
       let td = document.createElement('td');
       td.className = 'sleep-cell';
-      td.id = 's_' + hIdx + '_' + d;
-      let saved = localStorage.getItem('sleep_d_' + d);
-      if(saved == hIdx) td.classList.add('active');
-
+      td.id = `s_${hIdx}_${d}`;
       td.onclick = () => {
         for(let i=0; i<7; i++){
-          let c = document.getElementById('s_' + i + '_' + d);
+          let c = document.getElementById(`s_${i}_${d}`);
           if(c) c.classList.remove('active');
         }
-        let cur = localStorage.getItem('sleep_d_' + d);
-        if(cur == hIdx){
-          localStorage.removeItem('sleep_d_' + d);
+        if (trackerData.sleepMatrix[d] === hIdx) {
+          delete trackerData.sleepMatrix[d];
         } else {
           td.classList.add('active');
-          localStorage.setItem('sleep_d_' + d, hIdx);
+          trackerData.sleepMatrix[d] = hIdx;
         }
+        saveCloudData();
       };
       tr.appendChild(td);
     }
     sBody.appendChild(tr);
   });
 
-  // Inputs restore
-  ['uName', 'uMonth', 'goal1', 'goal2', 'goal3'].forEach(id => {
-    let el = document.getElementById(id);
-    let val = localStorage.getItem(id);
-    if(val) el.value = val;
-    el.oninput = () => localStorage.setItem(id, el.value);
-  });
+  let saveTimer = null;
+  function saveCloudData() {
+    if (!currentUser) return;
+    document.getElementById('syncStatus').textContent = "● Saving...";
+    clearTimeout(saveTimer);
+    saveTimer = setTimeout(() => {
+      trackerData.uName = document.getElementById('uName').value;
+      trackerData.uMonth = document.getElementById('uMonth').value;
+      trackerData.goal1 = document.getElementById('goal1').value;
+      trackerData.goal2 = document.getElementById('goal2').value;
+      trackerData.goal3 = document.getElementById('goal3').value;
 
-  function resetData() {
-    if(confirm('Pura tracker reset karna chahte hain?')) {
-      localStorage.clear();
-      location.reload();
-    }
+      db.collection('userTrackers').doc(currentUser.uid).set(trackerData)
+        .then(() => document.getElementById('syncStatus').textContent = "● Cloud Saved")
+        .catch((err) => {
+          console.error(err);
+          document.getElementById('syncStatus').textContent = "✖ Sync Error";
+        });
+    }, 500);
+  }
+
+  function loadCloudData() {
+    if (!currentUser) return;
+    document.getElementById('syncStatus').textContent = "● Loading...";
+    db.collection('userTrackers').doc(currentUser.uid).get()
+      .then(doc => {
+        if (doc.exists) {
+          trackerData = Object.assign(trackerData, doc.data());
+          document.getElementById('uName').value = trackerData.uName || "";
+          document.getElementById('uMonth').value = trackerData.uMonth || "OCTOBER";
+          document.getElementById('goal1').value = trackerData.goal1 || "";
+          document.getElementById('goal2').value = trackerData.goal2 || "";
+          document.getElementById('goal3').value = trackerData.goal3 || "";
+
+          if (trackerData.habitsText) {
+            for (let r in trackerData.habitsText) {
+              let inp = document.getElementById('ht_' + r);
+              if (inp) inp.value = trackerData.habitsText[r];
+            }
+          }
+          if (trackerData.habitsMatrix) {
+            for (let key in trackerData.habitsMatrix) {
+              let cell = document.getElementById('h_' + key);
+              if (cell) {
+                let status = trackerData.habitsMatrix[key];
+                cell.className = 'day-cell ' + status;
+                cell.textContent = status === 'done' ? '✔' : '✖';
+              }
+            }
+          }
+          if (trackerData.sleepMatrix) {
+            for (let d in trackerData.sleepMatrix) {
+              let hIdx = trackerData.sleepMatrix[d];
+              let cell = document.getElementById(`s_${hIdx}_${d}`);
+              if (cell) cell.classList.add('active');
+            }
+          }
+        }
+        document.getElementById('syncStatus').textContent = "● Cloud Connected";
+      });
   }
 </script>
 </body>
