@@ -47,7 +47,6 @@
     transition: background 0.3s, color 0.3s;
   }
 
-  /* Auth Modal */
   #authModal {
     position: fixed;
     inset: 0;
@@ -101,7 +100,6 @@
     text-decoration: underline;
   }
 
-  /* Header & Controls */
   .header {
     text-align: center;
     border-bottom: 2px solid var(--border);
@@ -187,7 +185,6 @@
   }
   .sync-status { font-size: 12px; color: var(--accent); font-weight: bold; }
 
-  /* Tables */
   .section-label {
     font-size: 12px;
     font-weight: 800;
@@ -263,7 +260,6 @@
   }
   .sleep-cell.active { background: #0284c7; color: #fff; }
 
-  /* Bottom Cards */
   .bottom-grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
@@ -317,6 +313,7 @@
     font-weight: 900;
     letter-spacing: 3px;
   }
+  .hidden-day { display: none !important; }
   @media (max-width: 768px) { 
     .bottom-grid { grid-template-columns: 1fr; }
     .footer { flex-direction: column; text-align: center; }
@@ -325,7 +322,6 @@
 </head>
 <body>
 
-<!-- Login / Register Modal -->
 <div id="authModal">
   <div class="auth-card">
     <h2 id="authHeading">WINTER ARC LOGIN</h2>
@@ -354,24 +350,24 @@
     <div>NAME: <input type="text" id="uName" value="" placeholder="Your Name" style="width:110px;" oninput="saveCloudData()"></div>
     
     <div>MONTH: 
-      <select id="uMonth" onchange="saveCloudData()">
-        <option>JANUARY</option>
-        <option>FEBRUARY</option>
-        <option>MARCH</option>
-        <option>APRIL</option>
-        <option>MAY</option>
-        <option>JUNE</option>
-        <option>JULY</option>
-        <option>AUGUST</option>
-        <option>SEPTEMBER</option>
-        <option>OCTOBER</option>
-        <option>NOVEMBER</option>
-        <option>DECEMBER</option>
+      <select id="uMonth" onchange="onPeriodChange()">
+        <option value="1">JANUARY</option>
+        <option value="2">FEBRUARY</option>
+        <option value="3">MARCH</option>
+        <option value="4">APRIL</option>
+        <option value="5">MAY</option>
+        <option value="6">JUNE</option>
+        <option value="7">JULY</option>
+        <option value="8">AUGUST</option>
+        <option value="9">SEPTEMBER</option>
+        <option value="10">OCTOBER</option>
+        <option value="11">NOVEMBER</option>
+        <option value="12">DECEMBER</option>
       </select>
     </div>
 
     <div>YEAR: 
-      <select id="uYear" onchange="saveCloudData()"></select>
+      <select id="uYear" onchange="onPeriodChange()"></select>
     </div>
 
     <div class="sync-status" id="syncStatus">● Connecting...</div>
@@ -440,20 +436,23 @@
 
   let currentUser = null;
   let isSignUpMode = false;
-  let trackerData = {
-    habitsText: {},
-    habitsMatrix: {},
-    sleepMatrix: {},
-    uName: "",
-    uMonth: "SEPTEMBER",
-    uYear: "2026",
-    goal1: "",
-    goal2: "",
-    goal3: "",
-    theme: "dark"
-  };
+  
+  function getEmptyTrackerState() {
+    return {
+      habitsText: {},
+      habitsMatrix: {},
+      sleepMatrix: {},
+      uName: "",
+      goal1: "",
+      goal2: "",
+      goal3: "",
+      theme: "dark"
+    };
+  }
 
-  // Populate Years: 2026 to 2046
+  let trackerData = getEmptyTrackerState();
+
+  const now = new Date();
   const yearSelect = document.getElementById('uYear');
   for (let y = 2026; y <= 2046; y++) {
     let opt = document.createElement('option');
@@ -461,28 +460,26 @@
     opt.textContent = y;
     yearSelect.appendChild(opt);
   }
+  yearSelect.value = now.getFullYear() >= 2026 ? now.getFullYear() : 2026;
+  document.getElementById('uMonth').value = now.getMonth() + 1;
 
-  // Theme Toggle
   function toggleTheme() {
     const isLight = document.body.classList.toggle('light-mode');
     trackerData.theme = isLight ? 'light' : 'dark';
     saveCloudData();
   }
 
-  // Daily Reminder Permission
   function setupReminder() {
     if (!("Notification" in window)) {
-      alert("Aapka browser notifications support nahi karta.");
+      alert("Browser notification support available nahi hai.");
       return;
     }
     Notification.requestPermission().then(permission => {
       if (permission === "granted") {
         new Notification("Winter Arc Tracker", {
-          body: "Daily Reminder activated! Aaj ka streak continue rakhein ⚡",
+          body: "Reminder active! Keep pushing your goals today ⚡",
           icon: "https://fav.farm/🔥"
         });
-      } else {
-        alert("Notification permission allow karein taaki daily reminder mil sake.");
       }
     });
   }
@@ -501,14 +498,12 @@
     const errDiv = document.getElementById('authError');
     errDiv.textContent = "";
 
-    if(!email || !pass) { errDiv.textContent = "Email aur password dono bharein!"; return; }
+    if(!email || !pass) { errDiv.textContent = "Email aur password enter karein."; return; }
 
     if (isSignUpMode) {
-      auth.createUserWithEmailAndPassword(email, pass)
-        .catch(err => errDiv.textContent = err.message);
+      auth.createUserWithEmailAndPassword(email, pass).catch(err => errDiv.textContent = err.message);
     } else {
-      auth.signInWithEmailAndPassword(email, pass)
-        .catch(err => errDiv.textContent = err.message);
+      auth.signInWithEmailAndPassword(email, pass).catch(err => errDiv.textContent = err.message);
     }
   }
 
@@ -528,17 +523,17 @@
     }
   });
 
+  // Build grid templates
   const hTableHead = document.querySelector('#habitTable thead tr');
   const sTableHead = document.querySelector('#sleepTable thead tr');
   const hBody = document.getElementById('habitBody');
   const sBody = document.getElementById('sleepBody');
 
   for(let i=1; i<=31; i++){
-    let th1 = document.createElement('th'); th1.textContent = i; hTableHead.appendChild(th1);
-    let th2 = document.createElement('th'); th2.textContent = i; sTableHead.appendChild(th2);
+    let th1 = document.createElement('th'); th1.textContent = i; th1.className = `col-day-${i}`; hTableHead.appendChild(th1);
+    let th2 = document.createElement('th'); th2.textContent = i; th2.className = `col-day-${i}`; sTableHead.appendChild(th2);
   }
 
-  // 10 Blank Habits
   for(let r=0; r<10; r++){
     let tr = document.createElement('tr');
     let tdTitle = document.createElement('td');
@@ -546,7 +541,6 @@
     let inp = document.createElement('input');
     inp.id = 'ht_' + r;
     inp.placeholder = `Habit ${r + 1}...`;
-    inp.value = "";
     inp.oninput = () => {
       trackerData.habitsText[r] = inp.value;
       saveCloudData();
@@ -556,7 +550,7 @@
 
     for(let d=1; d<=31; d++){
       let td = document.createElement('td');
-      td.className = 'day-cell';
+      td.className = `day-cell col-day-${d}`;
       td.id = `h_${r}_${d}`;
       td.onclick = () => {
         let key = `${r}_${d}`;
@@ -578,7 +572,6 @@
     hBody.appendChild(tr);
   }
 
-  // Sleep Matrix
   const sleepHours = ['10 HRS', '9 HRS', '8 HRS', '7 HRS', '6 HRS', '5 HRS', '4 HRS'];
   sleepHours.forEach((hr, hIdx) => {
     let tr = document.createElement('tr');
@@ -590,7 +583,7 @@
 
     for(let d=1; d<=31; d++){
       let td = document.createElement('td');
-      td.className = 'sleep-cell';
+      td.className = `sleep-cell col-day-${d}`;
       td.id = `s_${hIdx}_${d}`;
       td.onclick = () => {
         for(let i=0; i<7; i++){
@@ -610,11 +603,27 @@
     sBody.appendChild(tr);
   });
 
-  // Calculate Streak
+  function adjustDaysVisibility() {
+    const y = parseInt(document.getElementById('uYear').value, 10);
+    const m = parseInt(document.getElementById('uMonth').value, 10);
+    const totalDays = new Date(y, m, 0).getDate();
+
+    for (let d = 1; d <= 31; d++) {
+      const els = document.querySelectorAll(`.col-day-${d}`);
+      els.forEach(el => {
+        if (d > totalDays) el.classList.add('hidden-day');
+        else el.classList.remove('hidden-day');
+      });
+    }
+  }
+
   function calculateStreak() {
     let currentStreak = 0;
-    let maxStreak = 0;
-    for (let d = 1; d <= 31; d++) {
+    const y = parseInt(document.getElementById('uYear').value, 10);
+    const m = parseInt(document.getElementById('uMonth').value, 10);
+    const totalDays = new Date(y, m, 0).getDate();
+
+    for (let d = 1; d <= totalDays; d++) {
       let anyDone = false;
       for (let r = 0; r < 10; r++) {
         if (trackerData.habitsMatrix[`${r}_${d}`] === 'done') {
@@ -624,12 +633,42 @@
       }
       if (anyDone) {
         currentStreak++;
-        if (currentStreak > maxStreak) maxStreak = currentStreak;
       } else {
         currentStreak = 0;
       }
     }
-    document.getElementById('streakCount').textContent = maxStreak;
+    document.getElementById('streakCount').textContent = currentStreak;
+  }
+
+  function clearGridUI() {
+    for (let r = 0; r < 10; r++) {
+      let inp = document.getElementById('ht_' + r);
+      if (inp) inp.value = "";
+      for (let d = 1; d <= 31; d++) {
+        let cell = document.getElementById(`h_${r}_${d}`);
+        if (cell) {
+          cell.className = `day-cell col-day-${d}`;
+          cell.textContent = "";
+        }
+      }
+    }
+    for (let h = 0; h < 7; h++) {
+      for (let d = 1; d <= 31; d++) {
+        let cell = document.getElementById(`s_${h}_${d}`);
+        if (cell) cell.classList.remove('active');
+      }
+    }
+  }
+
+  function getMonthDocId() {
+    const y = document.getElementById('uYear').value;
+    const m = document.getElementById('uMonth').value;
+    return `${currentUser.uid}_${y}_${m}`;
+  }
+
+  function onPeriodChange() {
+    adjustDaysVisibility();
+    loadCloudData();
   }
 
   let saveTimer = null;
@@ -639,31 +678,31 @@
     clearTimeout(saveTimer);
     saveTimer = setTimeout(() => {
       trackerData.uName = document.getElementById('uName').value;
-      trackerData.uMonth = document.getElementById('uMonth').value;
-      trackerData.uYear = document.getElementById('uYear').value;
       trackerData.goal1 = document.getElementById('goal1').value;
       trackerData.goal2 = document.getElementById('goal2').value;
       trackerData.goal3 = document.getElementById('goal3').value;
 
-      db.collection('userTrackers').doc(currentUser.uid).set(trackerData)
+      db.collection('userTrackers').doc(getMonthDocId()).set(trackerData)
         .then(() => document.getElementById('syncStatus').textContent = "● Cloud Saved")
         .catch((err) => {
           console.error(err);
           document.getElementById('syncStatus').textContent = "✖ Sync Error";
         });
-    }, 500);
+    }, 400);
   }
 
   function loadCloudData() {
     if (!currentUser) return;
     document.getElementById('syncStatus').textContent = "● Loading...";
-    db.collection('userTrackers').doc(currentUser.uid).get()
+    adjustDaysVisibility();
+    clearGridUI();
+
+    db.collection('userTrackers').doc(getMonthDocId()).get()
       .then(doc => {
+        trackerData = getEmptyTrackerState();
         if (doc.exists) {
           trackerData = Object.assign(trackerData, doc.data());
           document.getElementById('uName').value = trackerData.uName || "";
-          document.getElementById('uMonth').value = trackerData.uMonth || "SEPTEMBER";
-          document.getElementById('uYear').value = trackerData.uYear || "2026";
           document.getElementById('goal1').value = trackerData.goal1 || "";
           document.getElementById('goal2').value = trackerData.goal2 || "";
           document.getElementById('goal3').value = trackerData.goal3 || "";
@@ -685,7 +724,7 @@
               let cell = document.getElementById('h_' + key);
               if (cell) {
                 let status = trackerData.habitsMatrix[key];
-                cell.className = 'day-cell ' + status;
+                cell.className = `day-cell col-day-${key.split('_')[1]} ` + status;
                 cell.textContent = status === 'done' ? '✔' : '✖';
               }
             }
@@ -697,8 +736,8 @@
               if (cell) cell.classList.add('active');
             }
           }
-          calculateStreak();
         }
+        calculateStreak();
         document.getElementById('syncStatus').textContent = "● Cloud Connected";
       });
   }
