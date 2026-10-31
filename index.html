@@ -47,6 +47,7 @@
     transition: background 0.3s, color 0.3s;
   }
 
+  /* Authentication Modal */
   #authModal {
     position: fixed;
     inset: 0;
@@ -100,6 +101,7 @@
     text-decoration: underline;
   }
 
+  /* Header & Navigation */
   .header {
     text-align: center;
     border-bottom: 2px solid var(--border);
@@ -185,6 +187,86 @@
   }
   .sync-status { font-size: 12px; color: var(--accent); font-weight: bold; }
 
+  /* Dashboard Metrics Cards */
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    margin-bottom: 16px;
+  }
+  .stat-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 12px 14px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+  }
+  .stat-title {
+    font-size: 11px;
+    font-weight: 800;
+    color: var(--sub);
+    letter-spacing: 1px;
+    text-transform: uppercase;
+  }
+  .stat-val {
+    font-size: 22px;
+    font-weight: 900;
+    color: var(--text);
+    margin: 4px 0;
+  }
+  .progress-track {
+    width: 100%;
+    height: 6px;
+    background: var(--input-bg);
+    border-radius: 4px;
+    overflow: hidden;
+  }
+  .progress-fill {
+    width: 0%;
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent), #818cf8);
+    transition: width 0.3s ease;
+  }
+
+  /* Momentum Chart */
+  .chart-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 14px;
+    margin-bottom: 16px;
+  }
+  .chart-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+  }
+  .chart-title {
+    font-size: 12px;
+    font-weight: 900;
+    letter-spacing: 1.5px;
+    color: var(--accent);
+    text-transform: uppercase;
+  }
+  .chart-sub {
+    font-size: 11px;
+    color: var(--sub);
+  }
+  .chart-container-box {
+    position: relative;
+    width: 100%;
+    height: 170px;
+  }
+  canvas#customChart {
+    width: 100%;
+    height: 100%;
+    display: block;
+  }
+
+  /* Tables */
   .section-label {
     font-size: 12px;
     font-weight: 800;
@@ -260,6 +342,7 @@
   }
   .sleep-cell.active { background: #0284c7; color: #fff; }
 
+  /* Monthly Goals Section */
   .bottom-grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
@@ -315,6 +398,7 @@
   }
   .hidden-day { display: none !important; }
   @media (max-width: 768px) { 
+    .stats-grid { grid-template-columns: 1fr; }
     .bottom-grid { grid-template-columns: 1fr; }
     .footer { flex-direction: column; text-align: center; }
   }
@@ -322,14 +406,15 @@
 </head>
 <body>
 
+<!-- Login Modal -->
 <div id="authModal">
   <div class="auth-card">
     <h2 id="authHeading">WINTER ARC LOGIN</h2>
-    <p id="authSub">Apne account me login karein ya naya banayein</p>
+    <p id="authSub">Sign in to your account or create a new one</p>
     <input type="email" id="authEmail" placeholder="Email address">
-    <input type="password" id="authPassword" placeholder="Password (at least 6 chars)">
+    <input type="password" id="authPassword" placeholder="Password (minimum 6 characters)">
     <button class="btn-auth" id="authBtn" onclick="handleAuth()">LOGIN</button>
-    <div class="toggle-auth" id="authToggle" onclick="toggleAuthMode()">Naya account banana hai? Sign Up karein</div>
+    <div class="toggle-auth" id="authToggle" onclick="toggleAuthMode()">Need an account? Sign Up</div>
     <div id="authError" style="color:#ef4444; font-size:11px; margin-top:10px;"></div>
   </div>
 </div>
@@ -375,6 +460,36 @@
   </div>
 </div>
 
+<!-- Realtime Metrics -->
+<div class="stats-grid">
+  <div class="stat-card">
+    <div class="stat-title">Monthly Completion</div>
+    <div class="stat-val" id="statCompletion">0%</div>
+    <div class="progress-track"><div class="progress-fill" id="statProgressFill"></div></div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-title">Habits Done</div>
+    <div class="stat-val" id="statDoneCount">0</div>
+    <div style="font-size: 11px; color: var(--sub);">Total checkmarks marked</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-title">Avg Sleep</div>
+    <div class="stat-val" id="statAvgSleep">--</div>
+    <div style="font-size: 11px; color: var(--sub);">Tracked daily hours</div>
+  </div>
+</div>
+
+<!-- Realtime Momentum Canvas Chart -->
+<div class="chart-card">
+  <div class="chart-header">
+    <div class="chart-title">📈 Daily Momentum Curve</div>
+    <div class="chart-sub" id="chartStatus">Live: 0% to 100% Habit Rate</div>
+  </div>
+  <div class="chart-container-box">
+    <canvas id="customChart"></canvas>
+  </div>
+</div>
+
 <div class="section-label">Habits Matrix (1 Tap: ✔ Done | 2 Taps: ✖ Missed | 3 Taps: Clear)</div>
 <div class="table-container">
   <table id="habitTable">
@@ -410,7 +525,7 @@
   </div>
   <div class="box">
     <label>What Should I Improve</label>
-    <textarea id="goal3" oninput="saveCloudData()" placeholder="Weak areas to fix..."></textarea>
+    <textarea id="goal3" oninput="saveCloudData()" placeholder="Areas for growth..."></textarea>
   </div>
 </div>
 
@@ -430,7 +545,10 @@
     measurementId: "G-P63QXDBSQD"
   };
 
-  firebase.initializeApp(firebaseConfig);
+  try {
+    firebase.initializeApp(firebaseConfig);
+  } catch(e) {}
+  
   const auth = firebase.auth();
   const db = firebase.firestore();
 
@@ -452,7 +570,7 @@
 
   let trackerData = getEmptyTrackerState();
 
-  const now = new Date();
+  const dNow = new Date();
   const yearSelect = document.getElementById('uYear');
   for (let y = 2026; y <= 2046; y++) {
     let opt = document.createElement('option');
@@ -460,24 +578,25 @@
     opt.textContent = y;
     yearSelect.appendChild(opt);
   }
-  yearSelect.value = now.getFullYear() >= 2026 ? now.getFullYear() : 2026;
-  document.getElementById('uMonth').value = now.getMonth() + 1;
+  yearSelect.value = dNow.getFullYear() >= 2026 ? dNow.getFullYear() : 2026;
+  document.getElementById('uMonth').value = dNow.getMonth() + 1;
 
   function toggleTheme() {
     const isLight = document.body.classList.toggle('light-mode');
     trackerData.theme = isLight ? 'light' : 'dark';
+    drawCustomChart();
     saveCloudData();
   }
 
   function setupReminder() {
     if (!("Notification" in window)) {
-      alert("Browser notification support available nahi hai.");
+      alert("Browser does not support desktop notifications.");
       return;
     }
     Notification.requestPermission().then(permission => {
       if (permission === "granted") {
         new Notification("Winter Arc Tracker", {
-          body: "Reminder active! Keep pushing your goals today ⚡",
+          body: "Stay focused on your winter arc goals! ⚡",
           icon: "https://fav.farm/🔥"
         });
       }
@@ -488,7 +607,7 @@
     isSignUpMode = !isSignUpMode;
     document.getElementById('authHeading').textContent = isSignUpMode ? "CREATE ACCOUNT" : "WINTER ARC LOGIN";
     document.getElementById('authBtn').textContent = isSignUpMode ? "SIGN UP & START" : "LOGIN";
-    document.getElementById('authToggle').textContent = isSignUpMode ? "Pehle se account hai? Login karein" : "Naya account banana hai? Sign Up karein";
+    document.getElementById('authToggle').textContent = isSignUpMode ? "Already have an account? Log in" : "Need an account? Sign Up";
     document.getElementById('authError').textContent = "";
   }
 
@@ -498,7 +617,7 @@
     const errDiv = document.getElementById('authError');
     errDiv.textContent = "";
 
-    if(!email || !pass) { errDiv.textContent = "Email aur password enter karein."; return; }
+    if(!email || !pass) { errDiv.textContent = "Please enter both email and password."; return; }
 
     if (isSignUpMode) {
       auth.createUserWithEmailAndPassword(email, pass).catch(err => errDiv.textContent = err.message);
@@ -523,7 +642,7 @@
     }
   });
 
-  // Build grid templates
+  // Table setup
   const hTableHead = document.querySelector('#habitTable thead tr');
   const sTableHead = document.querySelector('#sleepTable thead tr');
   const hBody = document.getElementById('habitBody');
@@ -544,6 +663,7 @@
     inp.oninput = () => {
       trackerData.habitsText[r] = inp.value;
       saveCloudData();
+      renderStatsAndGraph();
     };
     tdTitle.appendChild(inp);
     tr.appendChild(tdTitle);
@@ -564,7 +684,7 @@
           td.classList.remove('miss'); td.textContent = '';
           delete trackerData.habitsMatrix[key];
         }
-        calculateStreak();
+        renderStatsAndGraph();
         saveCloudData();
       };
       tr.appendChild(td);
@@ -572,13 +692,13 @@
     hBody.appendChild(tr);
   }
 
-  const sleepHours = ['10 HRS', '9 HRS', '8 HRS', '7 HRS', '6 HRS', '5 HRS', '4 HRS'];
+  const sleepHours = [10, 9, 8, 7, 6, 5, 4];
   sleepHours.forEach((hr, hIdx) => {
     let tr = document.createElement('tr');
     let tdTitle = document.createElement('td');
     tdTitle.className = 'sticky-col';
     tdTitle.style.color = 'var(--sub)';
-    tdTitle.textContent = hr;
+    tdTitle.textContent = `${hr} HRS`;
     tr.appendChild(tdTitle);
 
     for(let d=1; d<=31; d++){
@@ -596,6 +716,7 @@
           td.classList.add('active');
           trackerData.sleepMatrix[d] = hIdx;
         }
+        renderStatsAndGraph();
         saveCloudData();
       };
       tr.appendChild(td);
@@ -617,27 +738,168 @@
     }
   }
 
-  function calculateStreak() {
-    let currentStreak = 0;
+  // Pure Canvas Smooth Momentum Graph
+  function drawCustomChart() {
+    const canvas = document.getElementById('customChart');
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    const rect = canvas.getBoundingClientRect();
+    
+    const dpr = window.devicePixelRatio || 1;
+    canvas.width = rect.width * dpr;
+    canvas.height = rect.height * dpr;
+    ctx.scale(dpr, dpr);
+
+    const w = rect.width;
+    const h = rect.height;
+    ctx.clearRect(0, 0, w, h);
+
     const y = parseInt(document.getElementById('uYear').value, 10);
     const m = parseInt(document.getElementById('uMonth').value, 10);
     const totalDays = new Date(y, m, 0).getDate();
 
+    let activeHabitsCount = 0;
+    for (let r = 0; r < 10; r++) {
+      if ((trackerData.habitsText[r] || "").trim() !== "") activeHabitsCount++;
+    }
+    if (activeHabitsCount === 0) activeHabitsCount = 10;
+
+    let points = [];
     for (let d = 1; d <= totalDays; d++) {
-      let anyDone = false;
+      let dayDones = 0;
       for (let r = 0; r < 10; r++) {
-        if (trackerData.habitsMatrix[`${r}_${d}`] === 'done') {
-          anyDone = true;
-          break;
-        }
+        if (trackerData.habitsMatrix[`${r}_${d}`] === 'done') dayDones++;
       }
-      if (anyDone) {
-        currentStreak++;
-      } else {
-        currentStreak = 0;
+      let pct = Math.round((dayDones / activeHabitsCount) * 100);
+      points.push(pct);
+    }
+
+    const padLeft = 35;
+    const padRight = 15;
+    const padTop = 15;
+    const padBottom = 25;
+    const plotW = w - padLeft - padRight;
+    const plotH = h - padTop - padBottom;
+
+    const isLight = document.body.classList.contains('light-mode');
+    const gridColor = isLight ? 'rgba(0,0,0,0.06)' : 'rgba(255,255,255,0.06)';
+    const textColor = isLight ? '#64748b' : '#94a3b8';
+
+    ctx.fillStyle = textColor;
+    ctx.font = '10px sans-serif';
+    ctx.textAlign = 'right';
+
+    [0, 25, 50, 75, 100].forEach(p => {
+      let yPos = padTop + plotH - (p / 100) * plotH;
+      ctx.strokeStyle = gridColor;
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(padLeft, yPos);
+      ctx.lineTo(w - padRight, yPos);
+      ctx.stroke();
+      ctx.fillText(p + '%', padLeft - 6, yPos + 3);
+    });
+
+    ctx.textAlign = 'center';
+    const stepX = plotW / (totalDays - 1);
+    for (let d = 1; d <= totalDays; d += 3) {
+      let xPos = padLeft + (d - 1) * stepX;
+      ctx.fillText('D' + d, xPos, h - 8);
+    }
+
+    let coords = points.map((val, idx) => ({
+      x: padLeft + idx * stepX,
+      y: padTop + plotH - (val / 100) * plotH
+    }));
+
+    if (coords.length > 1) {
+      const grad = ctx.createLinearGradient(0, padTop, 0, padTop + plotH);
+      grad.addColorStop(0, 'rgba(56, 189, 248, 0.35)');
+      grad.addColorStop(1, 'rgba(56, 189, 248, 0.0)');
+
+      ctx.beginPath();
+      ctx.moveTo(coords[0].x, coords[0].y);
+      for (let i = 0; i < coords.length - 1; i++) {
+        let xc = (coords[i].x + coords[i + 1].x) / 2;
+        let yc = (coords[i].y + coords[i + 1].y) / 2;
+        ctx.quadraticCurveTo(coords[i].x, coords[i].y, xc, yc);
+      }
+      ctx.lineTo(coords[coords.length - 1].x, coords[coords.length - 1].y);
+      ctx.lineTo(coords[coords.length - 1].x, padTop + plotH);
+      ctx.lineTo(coords[0].x, padTop + plotH);
+      ctx.closePath();
+      ctx.fillStyle = grad;
+      ctx.fill();
+
+      ctx.beginPath();
+      ctx.moveTo(coords[0].x, coords[0].y);
+      for (let i = 0; i < coords.length - 1; i++) {
+        let xc = (coords[i].x + coords[i + 1].x) / 2;
+        let yc = (coords[i].y + coords[i + 1].y) / 2;
+        ctx.quadraticCurveTo(coords[i].x, coords[i].y, xc, yc);
+      }
+      ctx.lineTo(coords[coords.length - 1].x, coords[coords.length - 1].y);
+      ctx.strokeStyle = '#38bdf8';
+      ctx.lineWidth = 2.5;
+      ctx.stroke();
+
+      coords.forEach((pt, i) => {
+        if (points[i] > 0) {
+          ctx.beginPath();
+          ctx.arc(pt.x, pt.y, 3, 0, Math.PI * 2);
+          ctx.fillStyle = '#38bdf8';
+          ctx.fill();
+        }
+      });
+    }
+  }
+
+  function renderStatsAndGraph() {
+    const y = parseInt(document.getElementById('uYear').value, 10);
+    const m = parseInt(document.getElementById('uMonth').value, 10);
+    const totalDays = new Date(y, m, 0).getDate();
+
+    let activeHabitsCount = 0;
+    for (let r = 0; r < 10; r++) {
+      if ((trackerData.habitsText[r] || "").trim() !== "") activeHabitsCount++;
+    }
+    if (activeHabitsCount === 0) activeHabitsCount = 10;
+
+    let totalDones = 0;
+    let totalPossible = activeHabitsCount * totalDays;
+
+    for (let d = 1; d <= totalDays; d++) {
+      for (let r = 0; r < 10; r++) {
+        if (trackerData.habitsMatrix[`${r}_${d}`] === 'done') totalDones++;
       }
     }
-    document.getElementById('streakCount').textContent = currentStreak;
+
+    let rate = totalPossible > 0 ? Math.round((totalDones / totalPossible) * 100) : 0;
+    document.getElementById('statCompletion').textContent = rate + '%';
+    document.getElementById('statProgressFill').style.width = rate + '%';
+    document.getElementById('statDoneCount').textContent = totalDones;
+
+    let sleepCount = 0;
+    let sleepSum = 0;
+    for (let d = 1; d <= totalDays; d++) {
+      if (trackerData.sleepMatrix[d] !== undefined) {
+        sleepSum += sleepHours[trackerData.sleepMatrix[d]];
+        sleepCount++;
+      }
+    }
+    document.getElementById('statAvgSleep').textContent = sleepCount > 0 ? (sleepSum / sleepCount).toFixed(1) + 'h' : '--';
+
+    let streak = 0;
+    for (let d = 1; d <= totalDays; d++) {
+      let any = false;
+      for (let r = 0; r < 10; r++) {
+        if (trackerData.habitsMatrix[`${r}_${d}`] === 'done') { any = true; break; }
+      }
+      if (any) streak++; else streak = 0;
+    }
+    document.getElementById('streakCount').textContent = streak;
+
+    drawCustomChart();
   }
 
   function clearGridUI() {
@@ -663,7 +925,7 @@
   function getMonthDocId() {
     const y = document.getElementById('uYear').value;
     const m = document.getElementById('uMonth').value;
-    return `${currentUser.uid}_${y}_${m}`;
+    return `${currentUser ? currentUser.uid : 'local'}_${y}_${m}`;
   }
 
   function onPeriodChange() {
@@ -673,74 +935,94 @@
 
   let saveTimer = null;
   function saveCloudData() {
+    trackerData.uName = document.getElementById('uName').value;
+    trackerData.goal1 = document.getElementById('goal1').value;
+    trackerData.goal2 = document.getElementById('goal2').value;
+    trackerData.goal3 = document.getElementById('goal3').value;
+
+    const docKey = getMonthDocId();
+    localStorage.setItem(docKey, JSON.stringify(trackerData));
+
     if (!currentUser) return;
     document.getElementById('syncStatus').textContent = "● Saving...";
     clearTimeout(saveTimer);
     saveTimer = setTimeout(() => {
-      trackerData.uName = document.getElementById('uName').value;
-      trackerData.goal1 = document.getElementById('goal1').value;
-      trackerData.goal2 = document.getElementById('goal2').value;
-      trackerData.goal3 = document.getElementById('goal3').value;
-
-      db.collection('userTrackers').doc(getMonthDocId()).set(trackerData)
+      db.collection('userTrackers').doc(docKey).set(trackerData)
         .then(() => document.getElementById('syncStatus').textContent = "● Cloud Saved")
         .catch((err) => {
-          console.error(err);
-          document.getElementById('syncStatus').textContent = "✖ Sync Error";
+          console.warn("Cloud fallback to local storage:", err);
+          document.getElementById('syncStatus').textContent = "● Local Saved";
         });
     }, 400);
   }
 
   function loadCloudData() {
-    if (!currentUser) return;
-    document.getElementById('syncStatus').textContent = "● Loading...";
     adjustDaysVisibility();
     clearGridUI();
+    const docKey = getMonthDocId();
 
-    db.collection('userTrackers').doc(getMonthDocId()).get()
-      .then(doc => {
-        trackerData = getEmptyTrackerState();
-        if (doc.exists) {
-          trackerData = Object.assign(trackerData, doc.data());
-          document.getElementById('uName').value = trackerData.uName || "";
-          document.getElementById('goal1').value = trackerData.goal1 || "";
-          document.getElementById('goal2').value = trackerData.goal2 || "";
-          document.getElementById('goal3').value = trackerData.goal3 || "";
+    const applyData = (data) => {
+      trackerData = Object.assign(getEmptyTrackerState(), data);
+      document.getElementById('uName').value = trackerData.uName || "";
+      document.getElementById('goal1').value = trackerData.goal1 || "";
+      document.getElementById('goal2').value = trackerData.goal2 || "";
+      document.getElementById('goal3').value = trackerData.goal3 || "";
 
-          if (trackerData.theme === 'light') {
-            document.body.classList.add('light-mode');
-          } else {
-            document.body.classList.remove('light-mode');
-          }
+      if (trackerData.theme === 'light') document.body.classList.add('light-mode');
+      else document.body.classList.remove('light-mode');
 
-          if (trackerData.habitsText) {
-            for (let r in trackerData.habitsText) {
-              let inp = document.getElementById('ht_' + r);
-              if (inp) inp.value = trackerData.habitsText[r];
-            }
-          }
-          if (trackerData.habitsMatrix) {
-            for (let key in trackerData.habitsMatrix) {
-              let cell = document.getElementById('h_' + key);
-              if (cell) {
-                let status = trackerData.habitsMatrix[key];
-                cell.className = `day-cell col-day-${key.split('_')[1]} ` + status;
-                cell.textContent = status === 'done' ? '✔' : '✖';
-              }
-            }
-          }
-          if (trackerData.sleepMatrix) {
-            for (let d in trackerData.sleepMatrix) {
-              let hIdx = trackerData.sleepMatrix[d];
-              let cell = document.getElementById(`s_${hIdx}_${d}`);
-              if (cell) cell.classList.add('active');
-            }
+      if (trackerData.habitsText) {
+        for (let r in trackerData.habitsText) {
+          let inp = document.getElementById('ht_' + r);
+          if (inp) inp.value = trackerData.habitsText[r];
+        }
+      }
+      if (trackerData.habitsMatrix) {
+        for (let key in trackerData.habitsMatrix) {
+          let cell = document.getElementById('h_' + key);
+          if (cell) {
+            let status = trackerData.habitsMatrix[key];
+            cell.className = `day-cell col-day-${key.split('_')[1]} ` + status;
+            cell.textContent = status === 'done' ? '✔' : '✖';
           }
         }
-        calculateStreak();
-        document.getElementById('syncStatus').textContent = "● Cloud Connected";
+      }
+      if (trackerData.sleepMatrix) {
+        for (let d in trackerData.sleepMatrix) {
+          let hIdx = trackerData.sleepMatrix[d];
+          let cell = document.getElementById(`s_${hIdx}_${d}`);
+          if (cell) cell.classList.add('active');
+        }
+      }
+      renderStatsAndGraph();
+    };
+
+    const local = localStorage.getItem(docKey);
+    if (local) {
+      try { applyData(JSON.parse(local)); } catch(e){}
+    }
+
+    if (!currentUser) return;
+
+    document.getElementById('syncStatus').textContent = "● Loading...";
+    db.collection('userTrackers').doc(docKey).get()
+      .then(doc => {
+        if (doc.exists) {
+          applyData(doc.data());
+          localStorage.setItem(docKey, JSON.stringify(doc.data()));
+        }
+        document.getElementById('syncStatus').textContent = "● Connected";
+      })
+      .catch(err => {
+        console.warn("Firestore read failed, fallback to local:", err);
+        document.getElementById('syncStatus').textContent = "● Offline Mode";
       });
   }
+
+  window.addEventListener('resize', drawCustomChart);
+
+  adjustDaysVisibility();
+  drawCustomChart();
 </script>
 </body>
 </html>
